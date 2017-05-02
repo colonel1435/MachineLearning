@@ -6,6 +6,9 @@
 # #  Time        : 2017/4/21
 
 from MachineLearning.ArtificialNeuralNetwork.perceptron import Perceptron
+import matplotlib.pyplot as plt
+import numpy as np
+import decimal
 
 class LinearUnit(Perceptron):
     def __init__(self, input_num, activator):
@@ -37,6 +40,29 @@ def train_linear_unit():
     # Return linear unit trainned
     return linearUnit
 
+def draw_figure(result):
+    '''
+    Draw figure
+    '''
+    plt.figure()
+
+    X = list(result.keys())
+    Y = list(result.values())
+    _Y = [1000*x+2000 for x in X]
+    plt.plot(X, _Y, color="black", linewidth = 2, label="y=1000x+2000")
+    T = np.arctan2(X, Y)
+    S = 20
+    plt.scatter(X, Y, c=T, s=S, marker='o')
+    plt.title("WORK EXPERIENCE & SALATY")
+    plt.xlabel("Work years(YEAR)")
+    plt.ylabel("Salary(YUAN)")
+    plt.xticks(range(16))
+    # plt.grid(True, linestyle="-", color="gray")
+    plt.legend()
+    plt.autoscale()
+    plt.show()
+
+
 if __name__ == '__main__': 
     '''
     Trainning linear unit
@@ -45,10 +71,11 @@ if __name__ == '__main__':
     # Print weight
     print (linear_unit)
     # Check
-    print('Work 1 years, monthly salary = %.2f' % linear_unit.predict([1]))
-    print('Work 2.5 years, monthly salary = %.2f' % linear_unit.predict([2.5]))
-    print('Work 3.1 years, monthly salary = %.2f' % linear_unit.predict([3.1]))
-    print ('Work 4.6 years, monthly salary = %.2f' % linear_unit.predict([4.6]))
-    print ('Work 5.2 years, monthly salary = %.2f' % linear_unit.predict([5.2]))
-    print ('Work 6.7 years, monthly salary = %.2f' % linear_unit.predict([6.7]))
-    print ('Work 7.3 years, monthly salary = %.2f' % linear_unit.predict([7.3]))
+    items = [[1], [2.5], [3.1], [4.6], [5.2], [6.7], [7.3], [8.8], [9.4], [10], [11], [12], [13], [14], [15]]
+    result = { k[0] : linear_unit.predict(k) for k in items}
+
+    for (k, v) in result.items():
+        print('Work %d years, monthly salary = %.2f' % (k, v))
+
+    # Draw figure
+    draw_figure(result)
