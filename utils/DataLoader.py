@@ -111,10 +111,8 @@ def get_training_data_set():
     '''
     Get training data set
     '''
-    # image_loader = ImageLoader(Loader(os.path.join(os.path.pardir(os.getcwd()), "dataset\\train-images.idx3-ubyte")), 60000)
-    # label_loader = LabelLoader(Loader(os.path.join(os.path.pardir(os.getcwd()), "dataset\\train-labels.idx1-ubyte")), 60000)
-    image_loader = ImageLoader("train-images.idx3-ubyte", 20)  #60000
-    label_loader = LabelLoader("train-labels.idx1-ubyte", 20)  #60000
+    image_loader = ImageLoader(os.path.join(os.path.pardir, "dataset\\train-images.idx3-ubyte"), 10)
+    label_loader = LabelLoader(os.path.join(os.path.pardir, "dataset\\train-labels.idx1-ubyte"), 10)
     return image_loader.load(), label_loader.load()
 
 
