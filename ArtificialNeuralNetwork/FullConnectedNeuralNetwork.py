@@ -8,13 +8,11 @@
 from functools import reduce
 import numpy as np
 from  numpy import random
-# from MachineLearning.utils.dataLoader import get_training_data_set
-# from MachineLearning.utils.dataLoader import get_test_data_set
 from MachineLearning.utils import DataLoader
 from datetime import datetime
 
 def sigmoid(x):
-    return 0
+    return 1.0 / (1 + np.exp(-x))
 
 # 节点类，负责记录和维护节点自身信息以及与这个节点相关的上下游连接，实现输出值和误差项的计算。
 class Node(object):

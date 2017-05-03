@@ -120,6 +120,6 @@ def get_test_data_set():
     '''
     Get test data set
     '''
-    image_loader = ImageLoader('t10k-images.idx3-ubyte', 10)
-    label_loader = LabelLoader('t10k-labels.idx1-ubyte', 10)
+    image_loader = ImageLoader(os.path.join(os.path.pardir, "dataset\\t10k-images.idx3-ubyte"), 10)
+    label_loader = LabelLoader(os.path.join(os.path.pardir, "dataset\\t10k-labels.idx1-ubyte"), 10)
     return image_loader.load(), label_loader.load()
