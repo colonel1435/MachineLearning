@@ -12,15 +12,15 @@ from MachineLearning.utils import DataLoader
 from datetime import datetime
 
 def sigmoid(x):
-    return 1.0 / (1 + np.exp(-x))
+    return 1.0 / (1.0 + np.exp(-x))
 
 # 节点类，负责记录和维护节点自身信息以及与这个节点相关的上下游连接，实现输出值和误差项的计算。
 class Node(object):
     def __init__(self, layer_index, node_index):
         '''
-        构造节点对象。
-        layer_index: 节点所属的层的编号
-        node_index: 节点的编号
+        Construct Node object
+        layer_index: index of layer
+        node_index: index of node
         '''
         self.layer_index = layer_index
         self.node_index = node_index
@@ -31,32 +31,32 @@ class Node(object):
 
     def set_output(self, output):
         '''
-        设置节点的输出值。如果节点属于输入层会用到这个函数。
+        Set output, if node belongs to input layer
         '''
         self.output = output
 
     def append_downstream_connection(self, conn):
         '''
-        添加一个到下游节点的连接
+        Add connect to downstraem
         '''
         self.downstream.append(conn)
 
     def append_upstream_connection(self, conn):
         '''
-        添加一个到上游节点的连接
+        Add connect to upstream
         '''
         self.upstream.append(conn)
 
     def calc_output(self):
         '''
-        根据式1计算节点的输出
+        output y = sigmoid(wx)
         '''
         output = reduce(lambda ret, conn: ret + conn.upstream_node.output * conn.weight, self.upstream, 0)
         self.output = sigmoid(output)
 
     def calc_hidden_layer_delta(self):
         '''
-        节点属于隐藏层时，根据式4计算delta
+        Hide layer, delta = Gradient *（∑（Ｗkiδk））
         '''
         downstream_delta = reduce(
             lambda ret, conn: ret + conn.downstream_node.delta * conn.weight,
@@ -65,13 +65,13 @@ class Node(object):
 
     def calc_output_layer_delta(self, label):
         '''
-        节点属于输出层时，根据式3计算delta
+        Output layer，delta = Gradient * δ
         '''
         self.delta = self.output * (1 - self.output) * (label - self.output)
 
     def __str__(self):
         '''
-        打印节点的信息
+        Print node info
         '''
         node_str = '%u-%u: output: %f delta: %f' % (self.layer_index, self.node_index, self.output, self.delta)
         downstream_str = reduce(lambda ret, conn: ret + '\n\t' + str(conn), self.downstream, '')
@@ -81,9 +81,9 @@ class Node(object):
 class ConstNode(object):
     def __init__(self, layer_index, node_index):
         '''
-        构造节点对象。
-        layer_index: 节点所属的层的编号
-        node_index: 节点的编号
+        Construct Const node
+        layer_index: index of layer
+        node_index: index of node
         '''
         self.layer_index = layer_index
         self.node_index = node_index
@@ -92,13 +92,13 @@ class ConstNode(object):
 
     def append_downstream_connection(self, conn):
         '''
-        添加一个到下游节点的连接
+        Add connect to downstream
         '''
         self.downstream.append(conn)
 
     def calc_hidden_layer_delta(self):
         '''
-        节点属于隐藏层时，根据式4计算delta
+        Hide layer, delta = Gradient *（∑（Ｗkiδk））
         '''
         downstream_delta = reduce(
             lambda ret, conn: ret + conn.downstream_node.delta * conn.weight,
@@ -107,7 +107,7 @@ class ConstNode(object):
 
     def __str__(self):
         '''
-        打印节点的信息
+        Print node info
         '''
         node_str = '%u-%u: output: 1' % (self.layer_index, self.node_index)
         downstream_str = reduce(lambda ret, conn: ret + '\n\t' + str(conn), self.downstream, '')
@@ -116,9 +116,9 @@ class ConstNode(object):
 class Layer(object):
     def __init__(self, layer_index, node_count):
         '''
-        初始化一层
-        layer_index: 层编号
-        node_count: 层所包含的节点个数
+        Init layer
+        layer_index: index of layer
+        node_count: number of node in layer
         '''
         self.layer_index = layer_index
         self.nodes = []
@@ -128,21 +128,21 @@ class Layer(object):
 
     def set_output(self, data):
         '''
-        设置层的输出。当层是输入层时会用到。
+        Set output, if it's input layer
         '''
         for i in range(len(data)):
             self.nodes[i].set_output(data[i])
 
     def calc_output(self):
         '''
-        计算层的输出向量
+        Compute output vector of layer
         '''
         for node in self.nodes[:-1]:
             node.calc_output()
 
     def dump(self):
         '''
-        打印层的信息
+        Print layer info
         '''
         for node in self.nodes:
             print (node)
@@ -150,9 +150,9 @@ class Layer(object):
 class Connection(object):
     def __init__(self, upstream_node, downstream_node):
         '''
-        初始化连接，权重初始化为是一个很小的随机数
-        upstream_node: 连接的上游节点
-        downstream_node: 连接的下游节点
+        Init connection, initial weight is a small random number
+        upstream_node: nodes of upstream
+        downstream_node: nodes of downstream
         '''
         self.upstream_node = upstream_node
         self.downstream_node = downstream_node
@@ -162,26 +162,26 @@ class Connection(object):
 
     def calc_gradient(self):
         '''
-        计算梯度
+        Compute gradient
         '''
         self.gradient = self.downstream_node.delta * self.upstream_node.output
 
     def get_gradient(self):
         '''
-        获取当前的梯度
+        Get current gradient
         '''
         return self.gradient
 
     def update_weight(self, rate):
         '''
-        根据梯度下降算法更新权重
+        Update weight according to gradient decline algorithm
         '''
         self.calc_gradient()
         self.weight += rate * self.gradient
 
     def __str__(self):
         '''
-        打印连接信息
+        Print connect info
         '''
         return '(%u-%u) -> (%u-%u) = %f' % (
             self.upstream_node.layer_index,
@@ -204,8 +204,8 @@ class Connections(object):
 class Network(object):
     def __init__(self, layers):
         '''
-        初始化一个全连接神经网络
-        layers: 二维数组，描述神经网络每层节点数
+        Init full connected neural network
+        layers: 2-d array，contains nodes of per layer
         '''
         self.connections = Connections()
         self.layers = []
@@ -225,9 +225,9 @@ class Network(object):
 
     def train(self, labels, data_set, rate, iteration):
         '''
-        训练神经网络
-        labels: 数组，训练样本标签。每个元素是一个样本的标签。
-        data_set: 二维数组，训练样本特征。每个元素是一个样本的特征。
+        Training neural network
+        labels: training labels
+        data_set: training charactor
         '''
         for i in range(iteration):
             for d in range(len(data_set)):
@@ -235,7 +235,7 @@ class Network(object):
 
     def train_one_sample(self, label, sample, rate):
         '''
-        内部函数，用一个样本训练网络
+        Training network with one sample
         '''
         self.predict(sample)
         self.calc_delta(label)
@@ -243,7 +243,7 @@ class Network(object):
 
     def calc_delta(self, label):
         '''
-        内部函数，计算每个节点的delta
+        Compute delta of per node
         '''
         output_nodes = self.layers[-1].nodes
         for i in range(len(label)):
@@ -254,7 +254,7 @@ class Network(object):
 
     def update_weight(self, rate):
         '''
-        内部函数，更新每个连接权重
+        Update weight of per connection
         '''
         for layer in self.layers[:-1]:
             for node in layer.nodes:
@@ -263,7 +263,7 @@ class Network(object):
 
     def calc_gradient(self):
         '''
-        内部函数，计算每个连接的梯度
+        Compute gradient of per connection
         '''
         for layer in self.layers[:-1]:
             for node in layer.nodes:
@@ -272,9 +272,9 @@ class Network(object):
 
     def get_gradient(self, label, sample):
         '''
-        获得网络在一个样本下，每个连接上的梯度
-        label: 样本标签
-        sample: 样本输入
+        Get gradient
+        label: sample label
+        sample: sample input
         '''
         self.predict(sample)
         self.calc_delta(label)
@@ -282,8 +282,8 @@ class Network(object):
 
     def predict(self, sample):
         '''
-        根据输入的样本预测输出值
-        sample: 数组，样本的特征，也就是网络的输入向量
+        Predict output
+        sample: sample input vectors
         '''
         self.layers[0].set_output(sample)
         for i in range(1, len(self.layers)):
@@ -292,72 +292,72 @@ class Network(object):
 
     def dump(self):
         '''
-        打印网络信息
+        Print network info
         '''
         for layer in self.layers:
             layer.dump()
 def gradient_check(network, sample_feature, sample_label):
     '''
-    梯度检查
-    network: 神经网络对象
-    sample_feature: 样本的特征
-    sample_label: 样本的标签
+    Check gradient
+    network: neural net
+    sample_feature: sample feature
+    sample_label: sample label
     '''
-    # 计算网络误差
+    # Compute network delta
     network_error = lambda vec1, vec2: \
             0.5 * reduce(lambda a, b: a + b,
                       map(lambda v: (v[0] - v[1]) * (v[0] - v[1]),
                           zip(vec1, vec2)))
 
-    # 获取网络在当前样本下每个连接的梯度
+    # Get gradient of per connection in current sample
     network.get_gradient(sample_feature, sample_label)
 
-    # 对每个权重做梯度检查
+    # Check gradient of per weight
     for conn in network.connections.connections:
-        # 获取指定连接的梯度
+        # Get the gradient of connection
         actual_gradient = conn.get_gradient()
 
-        # 增加一个很小的值，计算网络的误差
+        # Compute delta of network though adding a small number
         epsilon = 0.0001
         conn.weight += epsilon
         error1 = network_error(network.predict(sample_feature), sample_label)
 
-        # 减去一个很小的值，计算网络的误差
-        conn.weight -= 2 * epsilon # 刚才加过了一次，因此这里需要减去2倍
+        # Compute delta of network though sub a small number
+        conn.weight -= 2 * epsilon
         error2 = network_error(network.predict(sample_feature), sample_label)
 
-        # 根据式6计算期望的梯度值
+        # Compute expected gradient
         expected_gradient = (error2 - error1) / (2 * epsilon)
 
-        # 打印
+        # Print gradient
         print ('expected gradient: \t%f\nactual gradient: \t%f' % (
             expected_gradient, actual_gradient))
 
-# 全连接层实现类
+# Full-connectted neural network
 class FullConnectedLayer(object):
     def __init__(self, input_size, output_size,
                  activator):
         '''
-        构造函数
-        input_size: 本层输入向量的维度
-        output_size: 本层输出向量的维度
-        activator: 激活函数
+        Construct network
+        input_size: dimen of input vector
+        output_size: dimen of output vector
+        activator: active function
         '''
         self.input_size = input_size
         self.output_size = output_size
         self.activator = activator
-        # 权重数组W
+        # weight array
         self.W = np.random.uniform(-0.1, 0.1,
             (output_size, input_size))
-        # 偏置项b
+        # bias
         self.b = np.zeros((output_size, 1))
-        # 输出向量
+        # output vector
         self.output = np.zeros((output_size, 1))
 
     def forward(self, input_array):
         '''
-        前向计算
-        input_array: 输入向量，维度必须等于input_size
+        forward-compute
+        input_array: input vector
         '''
         # 式2
         self.input = input_array
@@ -366,8 +366,8 @@ class FullConnectedLayer(object):
 
     def backward(self, delta_array):
         '''
-        反向计算W和b的梯度
-        delta_array: 从上一层传递过来的误差项
+        backward-compute gradient of weight and bias
+        delta_array: delta from previous layer
         '''
         # 式8
         self.delta = self.activator.backward(self.input) * np.dot(
@@ -377,12 +377,12 @@ class FullConnectedLayer(object):
 
     def update(self, learning_rate):
         '''
-        使用梯度下降算法更新权重
+        Update weight with gradient decline algorithm
         '''
         self.W += learning_rate * self.W_grad
         self.b += learning_rate * self.b_grad
 
-# Sigmoid激活函数类
+# Sigmoid
 class SigmoidActivator(object):
     def forward(self, weighted_input):
         return 1.0 / (1.0 + np.exp(-weighted_input))
@@ -391,7 +391,7 @@ class SigmoidActivator(object):
         return output * (1 - output)
 
 
-# 神经网络类
+# Neural network
 # class Network(object):
 #     def __init__(self, layers):
 #         '''
