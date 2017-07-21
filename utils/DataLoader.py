@@ -1,8 +1,8 @@
 #!usr/bin/env python3.4
 # -*- coding: utf-8 -*-
-# #  FileName    : 
+# #  FileName    :
 # #  Author      : Administrator
-# #  Description : 
+# #  Description :
 # #  Time        : 2017/5/2
 
 #!/usr/bin/env python
