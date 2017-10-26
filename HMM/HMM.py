@@ -41,11 +41,11 @@ class HMM:
         T = len(self.O)
         # Partial probability
         alpha = np.zeros((T, self.N), np.float)
-        # Init probability when T = 0, P = pi[i] * B[i][0]
+        # Init probability when t = 0, P = pi[i] * B[i][0]
         for i in range(self.N):
             alpha[0, i] = self.Pi[i] * self.B[i, self.O[0]]
 
-        # Compute probability when T > 0 with recursion; alpha(t+1)[i] = sum(alpha[t][j]*A[j][i]) * B[i][O(t+1)]
+        # Compute probability when t > 0 with recursion; alpha(t+1)[i] = sum(alpha[t][j]*A[j][i]) * B[i][O(t+1)]
         for t in range(T - 1):
             for i in range(self.N):
                 tmp_sum = 0
@@ -53,11 +53,11 @@ class HMM:
                     tmp_sum += alpha[t, j] * self.A[j, i]
                 alpha[t+1, i] = tmp_sum * self.B[i, self.O[t + 1]]
         # Sum probability when t = T
-        prob = 0
+        alpha_prob = 0.0
         for i in range(self.N):
-            prob += alpha[T - 1, i]
+            alpha_prob += alpha[T - 1, i]
 
-        return prob, alpha
+        return alpha_prob, alpha
 
     def viterbi(self):
         '''
@@ -71,11 +71,11 @@ class HMM:
         delta = np.zeros((T, self.N), np.float)
         # Reverse pointer
         psi = np.zeros((T, self.N), np.float)
-        # Init probability and path pointer when T = 0, P = pi[i] * B[i][0]
+        # Init probability and path pointer when t = 0, P = pi[i] * B[i][0]
         for i in range(self.N):
             delta[0][i] = self.Pi[i] * self.B[i][self.O[0]]
             psi[0, i] = 0
-        # Compute max probability when T > 0
+        # Compute max probability when t > 0
         for t in range(1, T):
             for i in range(self.N):
                 delta[t][i] = self.B[i][self.O[t]] * np.array([delta[t - 1, j] * self.A[j, i]
@@ -84,24 +84,53 @@ class HMM:
                                        for j in range(self.N)]).argmax()
 
         I[T - 1] = delta[T - 1, :].argmax()
-        # Compute max probability when T > 0
+        # Compute max probability when t > 0
         for t in range(T - 2, -1, -1):
             I[t] = psi[t + 1, I[t + 1]]
 
         return I, delta
 
+    def backward(self):
+        '''
+        Generating a HMM from a sequence of obersvations
+        '''
+        # Length of observed sequence
+        T = len(self.O)
+        # Partial probability
+        beta = np.zeros((T, self.N), np.float)
+        # Init probability when t = T, P = pi[i] * B[i][0]
+        for i in range(self.N):
+            beta[T - 1, i] = 1.0
+
+        # Compute probability when t < T with recursion; bata(t)[i] = sum(bata[t+1][j]*A[i][j]) * B[i][O(t-1)]
+        for t in range(T - 2, -1, -1):
+            for i in range(self.N):
+                tmp_sum = 0.0
+                for j in range(self.N):
+                    tmp_sum += self.A[i, j] * beta[t + 1, j]
+                beta[t, i] = tmp_sum * self.B[i, self.O[t - 1]]
+
+        # Sum probability when t = 0
+        # TODO IT ? beta_prob
+        beta_prob = 0.0
+        for i in range(self.N):
+            beta_prob += self.Pi[i] * self.B[i, self.O[0]] * beta[0, i]
+
+        return beta_prob, beta
+
+
 def test_hmm_forward():
     A = np.array([
-        [0.33, 0.33, 0.33],
-        [0.33, 0.33, 0.33],
-        [0.33, 0.33, 0.33]
+        [0.5, 0.2, 0.3],
+        [0.3, 0.5, 0.2],
+        [0.2, 0.3, 0.5]
     ], dtype=np.float)
     B = np.array([
         [0.5, 0.5],
-        [0.75, 0.25],
-        [0.25, 0.75]
+        [0.4, 0.6],
+        [0.7, 0.3]
     ], dtype=np.float)
-    Pi = np.array([0.33, 0.33, 0.33], np.float)
+    Pi = np.array([0.2, 0.4, 0.4], np.float)
     O = np.array([0, 0, 0, 0, 1, 0, 1, 1, 1, 1], np.int)
     hmm = HMM(A, B, Pi, O)
     ret = hmm.forward()
@@ -109,20 +138,39 @@ def test_hmm_forward():
 
 def test_hmm_viterbi():
     A = np.array([
-        [0.33, 0.33, 0.33],
-        [0.33, 0.33, 0.33],
-        [0.33, 0.33, 0.33]
+        [0.5, 0.2, 0.3],
+        [0.3, 0.5, 0.2],
+        [0.2, 0.3, 0.5]
     ], dtype=np.float)
     B = np.array([
         [0.5, 0.5],
-        [0.75, 0.25],
-        [0.25, 0.75]
+        [0.4, 0.6],
+        [0.7, 0.3]
     ], dtype=np.float)
-    Pi = np.array([0.33, 0.33, 0.33], np.float)
+    Pi = np.array([0.2, 0.4, 0.4], np.float)
     O = np.array([0, 0, 0, 0, 1, 0, 1, 1, 1, 1])
     hmm = HMM(A, B, Pi, O)
     ret = hmm.viterbi()
     print("Hiden state -> {0}\nAlpha -> \n{1}".format(ret[0], ret[1]))
+
+def test_hmm_backward():
+    A = np.array([
+        [0.5, 0.2, 0.3],
+        [0.3, 0.5, 0.2],
+        [0.2, 0.3, 0.5]
+    ], dtype=np.float)
+    B = np.array([
+        [0.5, 0.5],
+        [0.4, 0.6],
+        [0.7, 0.3]
+    ], dtype=np.float)
+    Pi = np.array([0.2, 0.4, 0.4], np.float)
+    O = np.array([0, 0, 0, 0, 1, 0, 1, 1, 1, 1])
+    hmm = HMM(A, B, Pi, O)
+    ret = hmm.backward()
+    print("Probability -> {0}\nBeta ->\n {1}".format(ret[0], ret[1]))
+
 if __name__ == '__main__':
-    # test_hmm_forward()
-    test_hmm_viterbi()
+    test_hmm_forward()
+    # test_hmm_viterbi()
+    test_hmm_backward()
