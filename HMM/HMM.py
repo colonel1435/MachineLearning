@@ -25,12 +25,13 @@ class HMM:
         self.M = self.B.shape[1]
         self.N = self.A.shape[0]
 
-        print(self.A)
-        print(self.B)
-        print(self.Pi)
-        print(self.O)
-        print(self.M)
-        print(self.N)
+        print("A ->\n{0}".format(self.A))
+        print("B ->\n{0}".format(self.B))
+        print("Pi ->\n{0}".format(self.Pi))
+        print("O ->\n{0}".format(self.O))
+        print("M ->\n{0}".format(self.M))
+        print("N ->\n{0}".format(self.N))
+
     def forward(self):
         '''
         Finding the probability of an observed sequence
@@ -65,8 +66,10 @@ class HMM:
         # Length of observed sequence
         T = len(self.O)
         # Status sequence
-        I = np.array(T, np.float)
+        I = np.zeros(T, np.int)
+        # Partial probability
         delta = np.zeros((T, self.N), np.float)
+        # Reverse pointer
         psi = np.zeros((T, self.N), np.float)
         # Init probability and path pointer when T = 0, P = pi[i] * B[i][0]
         for i in range(self.N):
@@ -83,9 +86,9 @@ class HMM:
         I[T - 1] = delta[T - 1, :].argmax()
         # Compute max probability when T > 0
         for t in range(T - 2, -1, -1):
-            I[t] = psi[t + 1, I[t+1]]
+            I[t] = psi[t + 1, I[t + 1]]
 
-        return I
+        return I, delta
 
 def test_hmm_forward():
     A = np.array([
@@ -118,7 +121,8 @@ def test_hmm_viterbi():
     Pi = np.array([0.33, 0.33, 0.33], np.float)
     O = np.array([0, 0, 0, 0, 1, 0, 1, 1, 1, 1])
     hmm = HMM(A, B, Pi, O)
-    print("Hiden state -> {0}".format(hmm.viterbi()))
+    ret = hmm.viterbi()
+    print("Hiden state -> {0}\nAlpha -> \n{1}".format(ret[0], ret[1]))
 if __name__ == '__main__':
     # test_hmm_forward()
     test_hmm_viterbi()
