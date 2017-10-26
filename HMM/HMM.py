@@ -102,16 +102,15 @@ class HMM:
         for i in range(self.N):
             beta[T - 1, i] = 1.0
 
-        # Compute probability when t < T with recursion; bata(t)[i] = sum(bata[t+1][j]*A[i][j]) * B[i][O(t-1)]
+        # Compute probability when t < T with recursion; bata(t)[i] = sum(A[i][j]) * B[i][O(t-1)]*bata[t+1][j])
         for t in range(T - 2, -1, -1):
             for i in range(self.N):
                 tmp_sum = 0.0
                 for j in range(self.N):
-                    tmp_sum += self.A[i, j] * beta[t + 1, j]
-                beta[t, i] = tmp_sum * self.B[i, self.O[t - 1]]
+                    tmp_sum += self.B[i, self.O[t - 1]] * self.A[i, j] * beta[t + 1, j]
+                beta[t, i] = tmp_sum
 
         # Sum probability when t = 0
-        # TODO IT ? beta_prob
         beta_prob = 0.0
         for i in range(self.N):
             beta_prob += self.Pi[i] * self.B[i, self.O[0]] * beta[0, i]
