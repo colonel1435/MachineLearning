@@ -173,18 +173,25 @@ class HMM:
             xi = self.xi(alpha, beta)
             lambda_n = [self.A, self.B, self.Pi]
 
+            '''
+            A[i, j] = num(A(t, i, j)) / num(A(t, i))
+            '''
             for i in range(self.N):
                 for j in range(self.N):
                     numerator = sum(xi[t, i, j] for t in range(T - 1))
                     denominator = sum(gamma[t, i] for t in range(T - 1))
                     self.A[i, j] = numerator / denominator
-
+            '''
+            B[i, j] = num(O(t, k)) / num(A(t, j))
+            '''
             for j in range(self.N):
                 for k in range(self.M):
                     numerator = sum(gamma[t, j] for t in range(T) if self.O[t] == V[k])
                     denominator = sum(gamma[t, j] for t in range(T))
                     self.B[j, k] = numerator / denominator
-
+            '''
+            Pi[i] = gamma[i]
+            '''
             for i in range(self.N):
                 self.Pi[i] = gamma[0, i]
 
