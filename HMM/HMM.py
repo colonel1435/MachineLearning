@@ -117,6 +117,85 @@ class HMM:
 
         return beta_prob, beta
 
+    def gamma(self, alpha, beta):
+        '''
+         Expect number of occurrence q(i)
+        '''
+        T = len(self.O)
+        gamma = np.zeros((T, self.N), np.float)
+        for t in range(T):
+            for i in range(self.N):
+                gamma[t, i] = alpha[t, i] * beta[t, i] / \
+                              sum(alpha[t, j] * beta[t, j] for j in range(self.N))
+
+        return gamma
+
+    def xi(self, alpha, beta):
+        '''
+        Expect number of translation fron q(i) to q(j)
+        '''
+        T = len(self.O)
+        xi = np.zeros((T - 1, self.N, self.N), np.float)
+        for t in range(T - 1):
+            for i in range(self.N):
+                for j in range(self.N):
+                    numerator = alpha[t, i] * self.A[i, j] * self.B[j, self.O[t + 1]] * beta[t + 1, j]
+                    denominator = sum(sum(
+                        alpha[t, ii] * self.A[ii, jj] * self.B[jj, self.O[t + 1]] * beta[t + 1, jj]
+                            for ii in range(self.N))
+                                      for jj in range(self.N))
+                    xi[t, i, j] = numerator / denominator
+
+        return xi
+
+    def baum_welch(self):
+        '''
+        Baum Welch algorithm
+        '''
+        T = len(self.O)
+        V = [k for k in range(self.M)]
+
+        # Init lambda. such as A, B, Pi
+        self.A = np.array(([0, 1, 0], [0.4, 0, 0.6], [0, 0.5, 0.5]), np.float)
+        self.B = np.array(([0.5, 0.5], [0.3, 0.7], [0.6, 0.4]), np.float)
+        # self.A = np.array([[1.0 / self.N] * self.N] * self.N) # must array back, then can use[i,j]
+        # self.B = np.array([[1.0 / self.M] * self.M] * self.N)
+        self.Pi = np.array(([1.0 / self.N] * self.N), np.float)
+
+        x = 1
+        delta_lambda = x + 1
+        times = 0
+        # iteration - lambda
+        while delta_lambda > x:
+            _, alpha = self.forward()
+            _, beta = self.backward()
+            gamma = self.gamma(alpha, beta)
+            xi = self.xi(alpha, beta)
+            lambda_n = [self.A, self.B, self.Pi]
+
+            for i in range(self.N):
+                for j in range(self.N):
+                    numerator = sum(xi[t, i, j] for t in range(T - 1))
+                    denominator = sum(gamma[t, i] for t in range(T - 1))
+                    self.A[i, j] = numerator / denominator
+
+            for j in range(self.N):
+                for k in range(self.M):
+                    numerator = sum(gamma[t, j] for t in range(T) if self.O[t] == V[k])
+                    denominator = sum(gamma[t, j] for t in range(T))
+                    self.B[j, k] = numerator / denominator
+
+            for i in range(self.N):
+                self.Pi[i] = gamma[0, i]
+
+            delta_A = map(abs, lambda_n[0] - self.A)
+            delta_B = map(abs, lambda_n[1] - self.B)
+            delta_Pi = map(abs, lambda_n[2] - self.Pi)
+            delta_lambda = sum([sum(sum(delta_A)), sum(sum(delta_B)), sum(delta_Pi)])
+            times += 1
+            print("Times -> {0} delta_lamba -> {1}".format(times, delta_lambda))
+
+        return self.A, self.B, self.Pi
 
 def test_hmm_forward():
     A = np.array([
@@ -169,7 +248,15 @@ def test_hmm_backward():
     ret = hmm.backward()
     print("Probability -> {0}\nBeta ->\n {1}".format(ret[0], ret[1]))
 
+def test_baum_welch():
+    O = np.array([0, 0, 0, 0, 1, 0, 1, 1, 1, 1])
+    hmm = HMM(np.zeros((3, 3)), np.zeros((3, 2)), np.array(3), O)
+    lambda_em = hmm.baum_welch()
+    print("A ->\n{0}\nB ->\n{1}\nPi -> \n{2}".format(lambda_em[0], lambda_em[1], lambda_em[2]))
+
+
 if __name__ == '__main__':
-    test_hmm_forward()
+    # test_hmm_forward()
     # test_hmm_viterbi()
-    test_hmm_backward()
+    # test_hmm_backward()
+    test_baum_welch()
