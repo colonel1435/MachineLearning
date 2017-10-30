@@ -9,7 +9,6 @@
 # -*- coding: UTF-8 -*-
 
 import struct
-from bp import *
 from datetime import datetime
 import sys
 import os
