@@ -29,7 +29,7 @@ class NeuralNetwork():
     # 通过试错过程训练神经网络
     # 每次都调整突触权重
     def train(self, training_set_inputs, training_set_outputs, number_of_training_iterations):
-        for iteration in xrange(number_of_training_iterations):
+        for iteration in range(number_of_training_iterations):
             # 将训练集导入神经网络
             output = self.think(training_set_inputs)
 
@@ -54,9 +54,7 @@ if __name__ == "__main__":
 
     # 初始化神经网络
     neural_network = NeuralNetwork()
-
-    print "随机的初始突触权重："
-    print neural_network.synaptic_weights
+    print ("随机的初始突触权重：{0}".format(neural_network.synaptic_weights))
 
     # 训练集。四个样本，每个有3个输入和1个输出
     training_set_inputs = array([[0, 0, 1], [1, 1, 1], [1, 0, 1], [0, 1, 1]])
@@ -66,9 +64,7 @@ if __name__ == "__main__":
     # 重复一万次，每次做微小的调整
     neural_network.train(training_set_inputs, training_set_outputs, 10000)
 
-    print "训练后的突触权重："
-    print neural_network.synaptic_weights
+    print ("训练后的突触权重：{0}".format(neural_network.synaptic_weights))
 
     # 用新数据测试神经网络
-    print "考虑新的形势 [1, 0, 0] -> ?: "
-    print neural_network.think(array([1, 0, 0]))
+    print ("考虑新的形势 [1, 0, 0] -> ?: {0}".format(neural_network.think(array([1, 0, 0]))))

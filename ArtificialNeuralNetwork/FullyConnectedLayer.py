@@ -6,6 +6,8 @@
 # #  Time        : 2017/10/29
 
 import numpy as np
+from MachineLearning.ArtificialNeuralNetwork.Activator import SigmoidActivitor
+
 
 class FullyConnectedLayer():
     def __init__(self, input_size, output_size, activator):
@@ -21,7 +23,7 @@ class FullyConnectedLayer():
         self.b = np.zeros((output_size, 1))
         self.input = np.zeros((input_size, 1))
         self.output = np.zeros((output_size, 1))
-        self.delta = mp.zeros((output_size, 1))
+        self.delta = np.zeros((output_size, 1))
 
         def forward(self, input_array):
             self.input = input_array
@@ -38,14 +40,6 @@ class FullyConnectedLayer():
         def update(self, learning_rate):
             self.W += learning_rate * self.W_grad
             self.b += learning_rate * self.b_grad
-
-class SigmoidActivitor():
-    ''''''
-    def forward(self, input):
-        return 1.0 / (1.0 + np.exp(- input))
-
-    def backward(self, output):
-        return output * (1 - output)
 
 class NetWork():
     '''
