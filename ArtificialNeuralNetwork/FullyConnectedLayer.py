@@ -41,6 +41,9 @@ class FullyConnectedLayer():
             self.W += learning_rate * self.W_grad
             self.b += learning_rate * self.b_grad
 
+        def dump(self):
+            print("W : {0}\nBias : {1}".format(self.W, self.B))
+
 class NetWork():
     '''
     
@@ -78,3 +81,31 @@ class NetWork():
     def update_weight(self, rate):
         for layer in self.layers:
             layer.update(rate)
+
+    def dump(self):
+        for layer in self.layers:
+            layer.dump()
+    def loss(self, output, label):
+        return 0.5 * ((label - output) * (label - output)).sum()
+
+    def gradient_check(self, sample_feature, sample_label):
+        self.predit(sample_feature)
+        self.cal_gradient(sample_label)
+
+        epsilon = 10e-4
+        for fc in self.layers:
+            for i in range(fc.W.shape[0]):
+                for j in range(fc.W.shape[1]):
+                    fc.W[i,j] += epsilon
+                    output = self.predit(sample_feature)
+                    err1 = self.loss(sample_label, output)
+                    fc.W[i,j] -= 2 * epsilon
+                    output = self.predit(sample_feature)
+                    err2 = self.loss(sample_label, output)
+                    expect_grad = (err1 - err2) / (2 * epsilon)
+                    fc.W[i, j] += epsilon
+                    print("Weight({0:d})({1:d}): Expected - Actual[{2:.4e} - {3:.4e}]".format(\
+                        i, j, expect_grad, fc.W_grad[i, j]))
+
+if __name__ == '__main__':
+    pass
