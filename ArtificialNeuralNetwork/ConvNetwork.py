@@ -6,7 +6,7 @@
 # #  Time        : 2017/10/30 0030
 
 import numpy as np
-from Activator import IdentityActivator, ReluActivator
+from ArtificialNeuralNetwork.Activator import IdentityActivator, ReluActivator
 
 def get_patch(input_array, i, j, filter_width,
               filter_height, stride):
