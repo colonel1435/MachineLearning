@@ -28,7 +28,7 @@ class NeuralNetwork():
 
     # 通过试错训练神经网络，每次微调突触权重
     def train(self, training_set_inputs, training_set_outputs, number_of_training_iterations):
-        for iteration in xrange(number_of_training_iterations):
+        for iteration in range(number_of_training_iterations):
             # 将整个训练集传递给神经网络
             output_from_layer_1, output_from_layer_2 = self.think(training_set_inputs)
 
@@ -56,10 +56,10 @@ class NeuralNetwork():
 
     # 输出权重
     def print_weights(self):
-        print "    Layer 1 (4 neurons, each with 3 inputs): "
-        print self.layer1.synaptic_weights
-        print "    Layer 2 (1 neuron, with 4 inputs):"
-        print self.layer2.synaptic_weights
+        print ("    Layer 1 (4 neurons, each with 3 inputs): ")
+        print (self.layer1.synaptic_weights)
+        print ("    Layer 2 (1 neuron, with 4 inputs):")
+        print (self.layer2.synaptic_weights)
 
 if __name__ == "__main__":
 
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     # 组合成神经网络
     neural_network = NeuralNetwork(layer1, layer2)
 
-    print "Stage 1) 随机初始突触权重： "
+    print ("Stage 1) 随机初始突触权重： ")
     neural_network.print_weights()
 
     # 训练集，7个样本，均有3输入1输出
@@ -86,10 +86,10 @@ if __name__ == "__main__":
     # 迭代60000次，每次微调权重值
     neural_network.train(training_set_inputs, training_set_outputs, 60000)
 
-    print "Stage 2) 训练后的新权重值： "
+    print ("Stage 2) 训练后的新权重值： ")
     neural_network.print_weights()
 
     # 用新数据测试神经网络
-    print "Stage 3) 思考新形势 [1, 1, 0] -> ?: "
+    print ("Stage 3) 思考新形势 [1, 1, 0] -> ?: ")
     hidden_state, output = neural_network.think(array([1, 1, 0]))
-    print output
+    print (output)

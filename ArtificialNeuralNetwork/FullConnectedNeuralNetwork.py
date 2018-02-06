@@ -8,7 +8,7 @@
 from functools import reduce
 import numpy as np
 from  numpy import random
-from MachineLearning.utils import DataLoader
+from utils import DataLoader
 from datetime import datetime
 
 def sigmoid(x):

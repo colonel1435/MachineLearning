@@ -5,7 +5,7 @@
 # #  Description : Refer to https://www.zybuluo.com/hanbingtao/note/448086
 # #  Time        : 2017/4/21
 
-from MachineLearning.ArtificialNeuralNetwork.Perceptron import Perceptron
+from ArtificialNeuralNetwork.Perceptron import Perceptron
 import matplotlib.pyplot as plt
 import numpy as np
 import decimal
